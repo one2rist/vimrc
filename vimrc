@@ -1,6 +1,7 @@
 set exrc
 set secure
 set number
+set nocp
 execute pathogen#infect()
 
 syntax on
@@ -111,6 +112,12 @@ nmap CP :put =expand('%:p')<CR>
 " gen header
 nmap HE ggO#ifndef <esc>:put = expand('%:t:r')<CR>VUkJA_H<esc>o#define <esc>:put = expand('%:t:r')<CR>VUkJA_H<CR><esc>Go#endif //<esc>:put = expand('%:t:r')<CR>VUkJA_H<esc>O<esc>gg
 
+
+syntax enable
+set background=dark
+let g:solarized_termcolors=256
+colorscheme solarized
+"colorscheme molokai
 
 
 "open a NERDTree automatically when vim starts up if no files were specified
