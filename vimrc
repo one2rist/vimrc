@@ -17,7 +17,7 @@ set hlsearch
 set hidden
 set ignorecase
 
-"highlight trealint white space
+"highlight trealing white space
 highlight ExtraWhitespace ctermbg=darkgreen guibg=darkgreen
 autocmd ColorScheme * highlight ExtraWhitespace ctermbg=darkgreen guibg=darkgreen
 match ExtraWhitespace /\s\+$/
@@ -48,11 +48,11 @@ nnoremap <leader>/ I//<esc>
 nnoremap <leader>? 0f/xx
 
 nnoremap <leader><space> i<space><esc>lli<space><esc>h
-nnoremap <leader>" i"<esc>ea "<esc>
 nnoremap <leader>{ i{ <esc>ea }<esc>
 nnoremap <leader>( i( <esc>ea )<esc>
 nnoremap <leader>[ i[ <esc>ea ]<esc>
 nnoremap <leader>< i< <esc>ea ><esc>
+nnoremap <leader>" i"<esc>ea "<esc>
 nnoremap <leader>' hxxhea <esc>p
 
 nnoremap j jzz
