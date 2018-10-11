@@ -1,3 +1,26 @@
+" ==============================================
+" HELP
+" ==============================================
+
+" SEARCH AND REPLACE
+" :%s/foo/bar/gci flags: %=all file, g=global (all matches), c=confirm, i=case
+
+" SEARCH IN FILES RECURSE FROM PWD
+" :vimgrep /some text/gj ./**/* | copen
+
+" COPY TO SYSTEM REGISTER
+" "+y{optional move} or
+" "*y - another system register
+
+" "+p - paste from system clipb
+" ":p - paste last command
+" "/p - paste last search
+" "1y - copy  to   1      register
+" "1p - paste from 1      register
+
+" SYSTEM USEFUL COMMANDS
+" sudo kill $(sudo lsof -t -i:20351) // kill em all who using port(address) 20351
+
 set exrc
 set secure
 set number
@@ -16,6 +39,7 @@ set incsearch
 set hlsearch
 set hidden
 set ignorecase
+set splitright
 
 " Disable automatic comment insertion:
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
@@ -91,19 +115,32 @@ inoremap <CR> <esc>zza<CR>
 
 " F2 save file:
 nnoremap <F2> <esc>:w<CR>
+inoremap <F2> <esc>:w<CR>
 " F3 open default vimrc
 nnoremap <F3> <esc>:tabe ~/.vimrc<CR>
+inoremap <F3> <esc>:tabe ~/.vimrc<CR>
 " F4 close file
 nnoremap <F4> <ESC>:q<CR>
+inoremap <F4> <ESC>:q<CR>
 
 " F5 save + compile + run C++11 code
 nnoremap <F5> <ESC> :wa <CR> :! g++ -std=c++11 -g % -o ~/run && ~/run <CR>
+inoremap <F5> <ESC> :wa <CR> :! g++ -std=c++11 -g % -o ~/run && ~/run <CR>
 " F6 save + compile + run C++14 code
 nnoremap <F6> <ESC> :wa <CR> :! g++ -std=c++14 -g % -o ~/run && ~/run <CR>
+inoremap <F6> <ESC> :wa <CR> :! g++ -std=c++14 -g % -o ~/run && ~/run <CR>
 " F7 save + compile + run C++17 code
 nnoremap <F7> <ESC> :wa <CR> :! g++ -std=c++17 -g % -o ~/run && ~/run <CR>
+inoremap <F7> <ESC> :wa <CR> :! g++ -std=c++17 -g % -o ~/run && ~/run <CR>
 " F8 save + run qmlscene
-nnoremap <F9> <ESC>:wa<CR>:!qmlscene %<CR>
+nnoremap <F8> <ESC>:wa<CR>:!qmlscene %<CR>
+inoremap <F8> <ESC>:wa<CR>:!qmlscene %<CR>
+" F9 save + run qmlscene
+nnoremap <F9> <ESC>:wa<CR>:call OpenFile()<CR>
+inoremap <F9> <ESC>:wa<CR>:call OpenFile()<CR>
+" F10 save + run qmlscene
+nnoremap <F10> <ESC>:wa<CR>:call OpenTemp()<CR>
+inoremap <F10> <ESC>:wa<CR>:call OpenTemp()<CR>
 
 "nmap <F12> :wa <CR> :! g++ -std=c++11 -I/usr/local/boost_1_65_1 main.cpp -o run -L/usr/local/boost_1_65_1/stage/lib/ -lboost_system -lboost_thread -lboost_chrono -pthread -lboost_date_time && ./run<CR>
 
@@ -149,26 +186,56 @@ nmap CP :put =expand('%:p')<CR>
 nmap HE ggO#ifndef <esc>:put = expand('%:t:r')<CR>VUkJA_H<esc>o#define <esc>:put = expand('%:t:r')<CR>VUkJA_H<CR><esc>Go#endif //<esc>:put = expand('%:t:r')<CR>VUkJA_H<esc>O<esc>gg
 
 
-" ==============================================
-" HELP
-" ==============================================
 
-" SEARCH AND REPLACE
-" :%s/foo/bar/gci flags: %=all file, g=global (all matches), c=confirm, i=case
+function! CppToH()
 
-" SEARCH IN FILES RECURSE FROM PWD
-" :vimgrep /some text/gj ./**/* | copen
+  if match(expand("%"), '\.cpp') > 0
+      exe "e %:r.h"
+  elseif match(expand("%"), '\.h') > 0
+      exe "e %:r.cpp"
+  endif
 
-" COPY TO SYSTEM REGISTER
-" "+y{optional move} or
-" "*y - another system register
+endfun
 
-" "+p - paste from system clipb
-" ":p - paste last command
-" "/p - paste last search
-" "1y - copy  to   1      register
-" "1p - paste from 1      register
+function! SwitchBuff()
 
+  if match(expand("%"), '\.cpp') > 0
+      exe "w"
+      exe "buffer" expand("%:r").".h"
+  elseif match(expand("%"), '\.h') > 0
+      exe "w"
+      exe "buffer" expand("%:r").".cpp"
+  endif
 
-" SYSTEM USEFUL COMMANDS
-" sudo kill $(sudo lsof -t -i:20351) // kill em all who using port(address) 20351
+endfun
+
+let g:vimtemp = "~/vimtemp"
+
+function! LocateFile(tail)
+    let l:path = getcwd() . "*" . expand("<cword>")
+    call system("locate -i " . l:path . a:tail . " &> " . g:vimtemp)
+    exe "tabe" g:vimtemp
+endfun
+
+function! LocateCommited(head)
+    call system("git diff-tree --name-only -r HEAD~" . a:head . " &> " . g:vimtemp)
+    exe "tabe" g:vimtemp
+endfun
+
+function! OpenFile()
+    exe "e" getline(".")
+endfun
+
+function! OpenTemp()
+    exe "e" g:vimtemp
+endfun
+
+nmap <leader>of :call OpenFile()
+nmap <leader>lg :call LocateCommited("0")
+nmap <leader>lo :call LocateFile("*")
+nmap <leader>lh :call LocateFile("*.h")
+nmap <leader>lH :call LocateFile(".h")
+nmap <leader>lc :call LocateFile("*.cpp")
+nmap <leader>lC :call LocateFile(".cpp")
+nmap <leader>lq :call LocateFile("*.qml")
+nmap <leader>lQ :call LocateFile(".qml")
