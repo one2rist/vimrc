@@ -104,6 +104,7 @@ nnoremap <leader>< i< <esc>ea ><esc>
 nnoremap <leader>" i"<esc>ea "<esc>
 nnoremap <leader>' hxxhea <esc>p
 
+" cursor is always in the middle of the page:
 nnoremap j jzz
 nnoremap k kzz
 inoremap <CR> <esc>zza<CR>
@@ -126,21 +127,22 @@ inoremap <F4> <ESC>:q<CR>
 " F5 save + compile + run C++11 code
 nnoremap <F5> <ESC> :wa <CR> :! g++ -std=c++11 -g % -o ~/run && ~/run <CR>
 inoremap <F5> <ESC> :wa <CR> :! g++ -std=c++11 -g % -o ~/run && ~/run <CR>
-" F6 save + compile + run C++14 code
-nnoremap <F6> <ESC> :wa <CR> :! g++ -std=c++14 -g % -o ~/run && ~/run <CR>
-inoremap <F6> <ESC> :wa <CR> :! g++ -std=c++14 -g % -o ~/run && ~/run <CR>
-" F7 save + compile + run C++17 code
-nnoremap <F7> <ESC> :wa <CR> :! g++ -std=c++17 -g % -o ~/run && ~/run <CR>
-inoremap <F7> <ESC> :wa <CR> :! g++ -std=c++17 -g % -o ~/run && ~/run <CR>
-" F8 save + run qmlscene
-nnoremap <F8> <ESC>:wa<CR>:!qmlscene %<CR>
-inoremap <F8> <ESC>:wa<CR>:!qmlscene %<CR>
+" F6 save + run qmlscene
+nnoremap <F6> <ESC>:wa<CR>:!qmlscene %<CR>
+inoremap <F6> <ESC>:wa<CR>:!qmlscene %<CR>
+" F8 open default vimrc
+nnoremap <F8> <esc>:tabe ~/.myvimnotes<CR>
+inoremap <F8> <esc>:tabe ~/.myvimnotes<CR>
+
 " F9 save + run qmlscene
 nnoremap <F9> <ESC>:wa<CR>:call OpenFile()<CR>
 inoremap <F9> <ESC>:wa<CR>:call OpenFile()<CR>
 " F10 save + run qmlscene
 nnoremap <F10> <ESC>:wa<CR>:call OpenTemp()<CR>
 inoremap <F10> <ESC>:wa<CR>:call OpenTemp()<CR>
+" F12 save + run qmlscene
+nnoremap <F12> <ESC>:wa<CR>:call LocateFile("*")<CR>
+inoremap <F12> <ESC>:wa<CR>:call LocateFile("*")<CR>
 
 "nmap <F12> :wa <CR> :! g++ -std=c++11 -I/usr/local/boost_1_65_1 main.cpp -o run -L/usr/local/boost_1_65_1/stage/lib/ -lboost_system -lboost_thread -lboost_chrono -pthread -lboost_date_time && ./run<CR>
 
@@ -211,15 +213,24 @@ endfun
 
 let g:vimtemp = "~/vimtemp"
 
+function! Locate(filename)
+    let l:path = getcwd() . "*" . a:filename
+    call system("locate -i " . l:path . " &> " . g:vimtemp)
+    exe "tabe" g:vimtemp
+    exe "edit"
+endfun
+
 function! LocateFile(tail)
     let l:path = getcwd() . "*" . expand("<cword>")
     call system("locate -i " . l:path . a:tail . " &> " . g:vimtemp)
     exe "tabe" g:vimtemp
+    exe "edit"
 endfun
 
 function! LocateCommited(head)
-    call system("git diff-tree --name-only -r HEAD~" . a:head . " &> " . g:vimtemp)
+    call system("git diff-tree --name-only -r " . a:head . " &> " . g:vimtemp)
     exe "tabe" g:vimtemp
+    exe "edit"
 endfun
 
 function! OpenFile()
@@ -230,8 +241,22 @@ function! OpenTemp()
     exe "e" g:vimtemp
 endfun
 
+function! GitDiffFile(head)
+    let l:vimgitdiff = "~/vimgitdiff"
+    call system("git diff " . a:head . " " . getline(".") . " &> " . l:vimgitdiff)
+    exe "e" l:vimgitdiff
+endfun
+
+function! GitDiffCurrentFile(head)
+    let l:vimgitdiff = "~/vimgitdiff"
+    call system("git diff " . a:head . " " . expand("%") . " &> " . l:vimgitdiff)
+    exe "vs" l:vimgitdiff
+endfun
+
 nmap <leader>of :call OpenFile()
-nmap <leader>lg :call LocateCommited("0")
+nmap <leader>gd :call GitDiffFile("HEAD~")
+nmap <leader>gc :call GitDiffCurrentFile("HEAD~")
+nmap <leader>lg :call LocateCommited("HEAD")
 nmap <leader>lo :call LocateFile("*")
 nmap <leader>lh :call LocateFile("*.h")
 nmap <leader>lH :call LocateFile(".h")
